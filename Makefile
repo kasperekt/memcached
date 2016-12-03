@@ -22,5 +22,5 @@ prepare:
 	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
 
 clean:
-	rm $(OBJ)
+	rm -r $(OBJDIR)
 	rm $(EXE)
