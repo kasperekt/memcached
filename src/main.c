@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "lib.h"
-
 int main() {
   float x = 30;
   float y = 20;
