@@ -3,11 +3,14 @@ CFLAGS=-Wall
 
 SRCDIR=src
 OBJDIR=obj
-SRC=main.c lib.c
+SRC=main.c
 OBJ=$(addprefix $(OBJDIR)/,$(SRC:.c=.o))
 EXE=memcached
 
-all: prepare $(EXE)
+all: clean prepare $(EXE)
+
+run: prepare $(EXE)
+	./$(EXE)
 
 $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
