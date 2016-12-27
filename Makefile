@@ -3,7 +3,7 @@ CFLAGS=-Wall
 
 SRCDIR=src
 OBJDIR=obj
-SRC=main.c client.c
+SRC=main.c client.c files.c
 OBJ=$(addprefix $(OBJDIR)/,$(SRC:.c=.o))
 EXE=memcached
 

@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "files.h"
+
 typedef struct client_connection_info {
     int id;
     int socket;
