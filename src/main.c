@@ -42,6 +42,8 @@ int main() {
         exit(1);
     }
 
+    printf("Server working on %s:%d\n", "127.0.0.1", SERVER_PORT);
+
     socklen_t nTmp;
     int nClientSocket;
     struct sockaddr_in stClientAddr;
