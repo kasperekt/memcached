@@ -43,3 +43,9 @@ int file_exists(const char *path) {
 
     return access(full_path, F_OK) != -1 ? 1 : 0;
 }
+
+void destroy_file(mc_file_info_t file) {
+    if (file.data != NULL) {
+        free(file.data);
+    }
+}

@@ -1,6 +1,5 @@
 #include "client.h"
 
-// static const int BUFSIZE = 128;
 static int next_client_id = 1;
 
 int generate_client_id() {
@@ -26,9 +25,6 @@ void* client_action(void* arg) {
     struct tm* local;
     time(&now);
     local = localtime(&now);
-    
-    // char buffer[BUFSIZE];
-    // int n = sprintf(buffer, "%s\n", asctime(local));
 
     const char* test_file = "test-image.jpg";
     if (file_exists(test_file)) {
@@ -37,7 +33,7 @@ void* client_action(void* arg) {
         printf("Attempting to write to socket...\n");
         write(info.socket, file.data, file.size);
         printf("Attempting to free file memory...\n");
-        free(file.data);
+        destroy_file(file);
     } else {
         fprintf(stderr, "File [%s] doesn't exist!\n", test_file);
     }

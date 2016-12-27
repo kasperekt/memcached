@@ -15,5 +15,6 @@ typedef struct memcached_file_info {
 void set_file_storage_path(const char* path);
 int file_exists(const char* path);
 mc_file_info_t read_file(const char* path);
+void destroy_file(mc_file_info_t file);
 
 #endif
