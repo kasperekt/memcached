@@ -7,10 +7,31 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <unistd.h>
+#include <pthread.h>
 
 static const int SERVER_PORT = 1234;
 static const int QUEUE_SIZE = 5;
 static const int BUFSIZE = 128;
+
+void* client_loop(void *arg) {
+    int sck = (int)(*((long*) arg));
+
+    time_t now;
+    struct tm* local;
+    time(&now);
+    local = localtime(&now);
+    
+    char buffer[BUFSIZE];
+    int n = sprintf(buffer, "%s\n", asctime(local));
+
+    printf("Sending date to client...\n");
+    write(sck, buffer, n);
+    printf("Date sent.\n");
+    printf("Closing connection.\n");
+    close(sck);
+
+    pthread_exit(NULL);
+}
 
 int main() {
     struct sockaddr_in stAddr;
@@ -41,28 +62,24 @@ int main() {
     }
 
     socklen_t nTmp;
-    int nClientSocket;
+    long nClientSocket;
     struct sockaddr_in stClientAddr;
     while (1) {
         nTmp = sizeof(struct sockaddr);
-        nClientSocket = accept(nSocket, (struct sockaddr*)&stClientAddr, &nTmp);
+        nClientSocket = (long)accept(nSocket, (struct sockaddr*)&stClientAddr, &nTmp);
         if (nClientSocket < 0) {
             fprintf(stderr, "Can't create a connection's socket\n");
             exit(2);
-        } 
+        }
 
-        printf("Connection from [%s]\n", inet_ntoa((struct in_addr)stClientAddr.sin_addr));
-        
-        time_t now;
-        struct tm* local;
-        time(&now);
-        local = localtime(&now);
-        
-        char buffer[BUFSIZE];
-        int n = sprintf(buffer, "%s\n", asctime(local));
-        
-        write(nClientSocket, buffer, n);
-        close(nClientSocket);
+        pthread_t client_thread;
+        printf("Creating pthread...\n");
+        int rc = pthread_create(&client_thread, NULL, client_loop, &nClientSocket);
+        // int rc = pthread_create(&client_thread, NULL, client_loop, NULL);
+        if (rc) {
+            fprintf(stderr, "Error. return code from pthread_create() is %d\n", rc);
+            exit(1);
+        }
     }
 
     close(nSocket);
