@@ -9,29 +9,10 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include "client.h"
+
 static const int SERVER_PORT = 1234;
 static const int QUEUE_SIZE = 5;
-static const int BUFSIZE = 128;
-
-void* client_loop(void *arg) {
-    int sck = (int)(*((long*) arg));
-
-    time_t now;
-    struct tm* local;
-    time(&now);
-    local = localtime(&now);
-    
-    char buffer[BUFSIZE];
-    int n = sprintf(buffer, "%s\n", asctime(local));
-
-    printf("Sending date to client...\n");
-    write(sck, buffer, n);
-    printf("Date sent.\n");
-    printf("Closing connection.\n");
-    close(sck);
-
-    pthread_exit(NULL);
-}
 
 int main() {
     struct sockaddr_in stAddr;
@@ -62,22 +43,20 @@ int main() {
     }
 
     socklen_t nTmp;
-    long nClientSocket;
+    int nClientSocket;
     struct sockaddr_in stClientAddr;
     while (1) {
         nTmp = sizeof(struct sockaddr);
-        nClientSocket = (long)accept(nSocket, (struct sockaddr*)&stClientAddr, &nTmp);
+        nClientSocket = accept(nSocket, (struct sockaddr*)&stClientAddr, &nTmp);
         if (nClientSocket < 0) {
             fprintf(stderr, "Can't create a connection's socket\n");
             exit(2);
         }
 
-        pthread_t client_thread;
-        printf("Creating pthread...\n");
-        int rc = pthread_create(&client_thread, NULL, client_loop, &nClientSocket);
-        // int rc = pthread_create(&client_thread, NULL, client_loop, NULL);
+        int client_id = generate_client_id();
+        int rc = create_client_thread(nClientSocket, client_id);
         if (rc) {
-            fprintf(stderr, "Error. return code from pthread_create() is %d\n", rc);
+            fprintf(stderr, "Error. return code from create_client_thread() is %d\n", rc);
             exit(1);
         }
     }
