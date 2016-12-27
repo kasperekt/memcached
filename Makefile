@@ -24,7 +24,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 lint:
-	splint $(SRCDIR)/*.c
+	splint $(SRCDIR)/*.c +posixlib
 
 prepare:
 	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
