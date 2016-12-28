@@ -55,3 +55,38 @@ void destroy_file(mc_file_info_t* file) {
 
     free(file);
 }
+
+size_t file_list(char ***ls) {
+    size_t count = 0;
+    DIR *dp = NULL;
+    struct dirent *ep = NULL;
+
+    dp = opendir(STORAGE_PATH);
+    if (dp == NULL) {
+        fprintf(stderr, "no such directory: '%s'", STORAGE_PATH);
+        return 0;
+    }
+
+    *ls = NULL;
+    ep = readdir(dp);
+    while (ep != NULL) {
+        count++;
+        ep = readdir(dp);
+    }
+
+    rewinddir(dp);
+    *ls = calloc(count, sizeof(char*));
+
+    count = 0;
+    ep = readdir(dp);
+    while (ep != NULL) {
+        if (strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..") != 0) {
+            (*ls)[count++] = strdup(ep->d_name);
+        }
+        
+        ep = readdir(dp);
+    }
+
+    closedir(dp);
+    return count;
+}

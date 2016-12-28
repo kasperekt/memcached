@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <pthread.h>
 
 #include "files.h"
 
@@ -17,6 +18,8 @@ typedef struct file_storage_entry {
 } file_storage_entry_t;
 
 void set_cache_size(const unsigned long size);
+void init_cache_mutex();
+void destroy_cache_mutex();
 mc_file_info_t* get_file(const char* pathname);
 mc_file_info_t* get_cached_file(const char* pathname);
 int store_file(const char* pathname, mc_file_info_t* file);

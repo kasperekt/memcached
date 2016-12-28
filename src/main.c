@@ -78,6 +78,7 @@ int main(int argc, char** argv) {
     }
 
     set_cache_size(args.cache_size);
+    init_cache_mutex();
     
     int cache_size_mb = args.cache_size / (1024 * 1024);
     printf("Server working on %s:%d\nCache size: %d MB\n", inet_ntoa(stAddr.sin_addr), args.port, cache_size_mb);
@@ -102,5 +103,6 @@ int main(int argc, char** argv) {
     }
 
     close(nSocket);
+    destroy_cache_mutex();
     return 0;
 }

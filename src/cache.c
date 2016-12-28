@@ -1,8 +1,17 @@
 #include "cache.h"
 
+static pthread_mutex_t lock;
 static unsigned long cache_size = 0;
 static unsigned long cache_size_taken = 0;
 static file_storage_entry_t* storage = NULL;
+
+void init_cache_mutex() {
+    pthread_mutex_init(&lock, NULL);
+}
+
+void destroy_cache_mutex() {
+    pthread_mutex_destroy(&lock);
+}
 
 void set_cache_size(const unsigned long size) {
     cache_size = size;
@@ -98,9 +107,13 @@ mc_file_info_t* get_file(const char* pathname) {
         return NULL;
     }
 
+    pthread_mutex_lock(&lock);
     mc_file_info_t* new_file = get_cached_file(pathname);
+    pthread_mutex_unlock(&lock);
     if (new_file != NULL) {
+        pthread_mutex_lock(&lock);
         refresh_timestamp(pathname);
+        pthread_mutex_unlock(&lock);
         return new_file;
     }
 
@@ -109,11 +122,13 @@ mc_file_info_t* get_file(const char* pathname) {
         return new_file;
     }
 
+    pthread_mutex_lock(&lock);
     while (!fits_in_storage(new_file)) {
         remove_oldest_entry();
     }
 
     store_file(pathname, new_file);
-    
+    pthread_mutex_unlock(&lock);
+
     return new_file;
 }
