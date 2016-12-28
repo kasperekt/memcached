@@ -15,7 +15,8 @@ static char* remove_trailing_slash(const char *path) {
 }
 
 void set_file_storage_path(const char* path) {
-    STORAGE_PATH = remove_trailing_slash(path);
+    STORAGE_PATH = calloc(1, sizeof(char) * strlen(path));
+    STORAGE_PATH = strdup(path);
 }
 
 mc_file_info_t* read_file(const char* path) {

@@ -20,13 +20,15 @@ typedef struct mc_arguments {
     unsigned long cache_size;
     u_int32_t ip;
     int port;
+    char* dir;
 } mc_args_t;
 
 mc_args_t parse_arguments(int argc, char** argv) {
     mc_args_t args = {
         .cache_size = 1024 * 1024 * 30, // 30 MB
         .ip = INADDR_ANY,
-        .port = 1234
+        .port = 1234,
+        .dir = "/tmp"
     };
 
     if (argc > 1) {
@@ -40,7 +42,12 @@ mc_args_t parse_arguments(int argc, char** argv) {
     } 
 
     if (argc > 3) {
-        char* cache_size_str = argv[3];
+        char* storage_dir = argv[3];
+        args.dir = storage_dir;
+    }
+
+    if (argc > 4) {
+        char* cache_size_str = argv[4];
         args.cache_size = atol(cache_size_str);
     }
 
@@ -77,11 +84,16 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    set_file_storage_path(args.dir);
     set_cache_size(args.cache_size);
     init_cache_mutex();
     
     int cache_size_mb = args.cache_size / (1024 * 1024);
-    printf("Server working on %s:%d\nCache size: %d MB\n", inet_ntoa(stAddr.sin_addr), args.port, cache_size_mb);
+    printf("Server working on %s:%d\nCache size: %d MB\nStorage directory: %s\n\n",
+           inet_ntoa(stAddr.sin_addr),
+           args.port,
+           cache_size_mb,
+           args.dir);
 
     socklen_t nTmp;
     int nClientSocket;
