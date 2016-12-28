@@ -1,21 +1,25 @@
 #include "cache.h"
 
-static long cache_size = 0;
-static long cache_size_taken = 0;
+static unsigned long cache_size = 0;
+static unsigned long cache_size_taken = 0;
 static file_storage_entry_t* storage = NULL;
 
-void set_cache_size(long size) {
+void set_cache_size(const unsigned long size) {
     cache_size = size;
 }
 
-int store_file(const char* pathname, mc_file_info_t file) {
+int store_file(const char* pathname, mc_file_info_t* file) {
     file_storage_entry_t* tmp = malloc(sizeof(file_storage_entry_t));
     tmp->next = NULL;
     tmp->pathname = (char*)pathname;
     tmp->file = file;
+    tmp->timestamp = time(NULL);
 
     if (storage == NULL) {
         storage = tmp;
+#ifdef MC_DEBUG
+        printf("[%s] file saved in cache (size=%ld)\n", tmp->pathname, tmp->file->size);
+#endif
         return 0;
     }
 
@@ -25,9 +29,91 @@ int store_file(const char* pathname, mc_file_info_t file) {
     }
     
     iterator->next = tmp;
-    cache_size_taken = cache_size_taken + tmp->file.size;
+    cache_size_taken = cache_size_taken + tmp->file->size;
 #ifdef MC_DEBUG
     printf("[%s] file saved in cache!\n", tmp->pathname);
 #endif
     return 0;
+}
+
+mc_file_info_t* get_cached_file(const char* pathname) {
+    file_storage_entry_t* iterator = storage;
+
+    while (iterator != NULL) {
+        if (strcmp(iterator->pathname, pathname) == 0) {
+            return iterator->file;
+        }
+
+        iterator = iterator->next;
+    }
+
+    return NULL;
+}
+
+int refresh_timestamp(const char* pathname) {
+    file_storage_entry_t* iterator = storage;
+    while (iterator != NULL) {
+        if (strcmp(iterator->pathname, pathname) == 0) {
+            iterator->timestamp = time(NULL);
+
+#ifdef MC_DEBUG
+            printf("[%s] Refreshed timestamp: %lu\n", iterator->pathname, iterator->timestamp);
+#endif
+
+            return 1;
+        }
+
+        iterator = iterator->next;
+    }
+
+    return 0;
+}
+
+file_storage_entry_t* remove_oldest_entry() {
+    if (storage == NULL) {
+        return NULL;
+    }
+
+    file_storage_entry_t* oldest = storage;
+    file_storage_entry_t* before = NULL;
+    file_storage_entry_t* after = oldest->next;
+    while ((after != NULL) && (oldest->timestamp < after->timestamp)) {
+        before = oldest;
+        oldest = after;
+        if (oldest->next != NULL) {
+            after = oldest->next;
+        }
+    }
+
+    before->next = after;
+    return oldest;
+}
+
+int fits_in_storage(const mc_file_info_t *file) {
+    return file->size + cache_size_taken < cache_size;
+}
+
+mc_file_info_t* get_file(const char* pathname) {
+    if (!file_exists(pathname)) {
+        return NULL;
+    }
+
+    mc_file_info_t* new_file = get_cached_file(pathname);
+    if (new_file != NULL) {
+        refresh_timestamp(pathname);
+        return new_file;
+    }
+
+    new_file = read_file(pathname);
+    if (new_file->size > cache_size) {
+        return new_file;
+    }
+
+    while (!fits_in_storage(new_file)) {
+        remove_oldest_entry();
+    }
+
+    store_file(pathname, new_file);
+    
+    return new_file;
 }

@@ -12,10 +12,12 @@
 #include "client.h"
 #include "cache.h"
 
+#define MC_DEBUG 1
+
 static const int QUEUE_SIZE = 5;
 
 typedef struct mc_arguments {
-    long cache_size;
+    unsigned long cache_size;
     u_int32_t ip;
     int port;
 } mc_args_t;

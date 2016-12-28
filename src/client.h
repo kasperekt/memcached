@@ -6,6 +6,9 @@
 #include <unistd.h>
 
 #include "files.h"
+#include "cache.h"
+
+#define MC_DEBUG 1
 
 typedef struct client_connection_info {
     int id;
