@@ -7,7 +7,7 @@ SRC=main.c client.c files.c cache.c
 OBJ=$(addprefix $(OBJDIR)/,$(SRC:.c=.o))
 EXE=memcached
 
-FILES_STORAGE_DIR=/Users/tomek/University/temp/memcached_test
+FILES_STORAGE_DIR=/tmp
 
 all: clean prepare $(EXE)
 
