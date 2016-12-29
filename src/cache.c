@@ -98,6 +98,8 @@ file_storage_entry_t* remove_oldest_entry() {
     }
 
     before->next = after;
+    cache_size_taken -= oldest->file->size;
+    
     return oldest;
 }
 

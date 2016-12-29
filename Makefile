@@ -32,5 +32,5 @@ prepare:
 	if [ ! -d $(OBJDIR) ]; then mkdir $(OBJDIR); fi
 
 clean:
-	rm -r $(OBJDIR)
-	rm $(EXE)
+	if [ -d $(OBJDIR) ]; then rm -r $(OBJDIR); fi
+	if [ -f $(EXE) ]; then rm $(EXE); fi

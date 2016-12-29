@@ -2,18 +2,6 @@
 
 static char* STORAGE_PATH = "/tmp";
 
-static char* remove_trailing_slash(const char *path) {
-    char *buffer = 0;
-    strcpy(buffer, path);
-    size_t len = strlen(buffer);
-
-    if ((len > 0) && (buffer[len - 1] == '/')) {
-        buffer[len - 1] = 0;
-    }
-
-    return buffer;
-}
-
 void set_file_storage_path(const char* path) {
     STORAGE_PATH = calloc(1, sizeof(char) * strlen(path));
     STORAGE_PATH = strdup(path);
