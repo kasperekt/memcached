@@ -12,7 +12,7 @@
 #define MC_DEBUG 1
 
 typedef struct memcached_file_info {
-    long size;
+    unsigned long size;
     char *data;
 } mc_file_info_t;
 

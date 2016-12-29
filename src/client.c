@@ -1,7 +1,9 @@
 #include "client.h"
 
-static int next_client_id = 1;
+const char MC_ACCEPT = 0xFF;
+const char MC_FAILURE = 0x00;
 
+static int next_client_id = 1;
 int generate_client_id() {
     return next_client_id++;
 }
@@ -23,47 +25,29 @@ void* client_action(void* arg) {
     printf("Connected with client %d\n", info.id);
 #endif
 
-    time_t now;
-    struct tm* local;
-    time(&now);
-    local = localtime(&now);
-
-    const char* intro_msg = "--- Available files (choose one) ---\n";
-    write(info.socket, intro_msg, strlen(intro_msg));
-
     size_t files_count;
     char** files;
     files_count = file_list(&files);
-    
-    for (int i = 0; i < files_count; ++i) {
-        write(info.socket, files[i], strlen(files[i]));
-        write(info.socket, "\n", 1);
-    }
 
     char response[128];
-    do {
-        read(info.socket, response, 128);
-        size_t res_len = strlen(response);
-        if (response[res_len - 1] == '\n') {
-            response[res_len - 1] = '\0';
-        }
-    } while (!valid_request(files, files_count, response));
+    int bytes_read = read(info.socket, response, 128);
 
 #ifdef MC_DEBUG
     printf("[%d] client wants to download %s file\n", info.id, response);
 #endif
 
-    free(files);
-
-    if (file_exists(response)) {
+    if (valid_request(files, files_count, response)) {
+        write(info.socket, &MC_ACCEPT, 1);
         mc_file_info_t* file = get_file(response);
+        write(info.socket, &file->size, sizeof(file->size));
         write(info.socket, file->data, file->size);
     } else {
+        write(info.socket, &MC_FAILURE, 1);
         fprintf(stderr, "File %s doesn't exist\n", response);
     }
 
+    free(files);
     close(info.socket);
-    
     printf("Connection with client %d closed.\n", info.id);
 
     pthread_exit(NULL);

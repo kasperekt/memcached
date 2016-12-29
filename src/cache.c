@@ -55,7 +55,7 @@ mc_file_info_t* get_cached_file(const char* pathname) {
 
         iterator = iterator->next;
     }
-
+    
     return NULL;
 }
 
