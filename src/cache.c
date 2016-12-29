@@ -5,6 +5,10 @@ static unsigned long cache_size = 0;
 static unsigned long cache_size_taken = 0;
 static file_storage_entry_t* storage = NULL;
 
+void print_cache_status() {
+    printf("Cache status: %lu/%lu\n", cache_size_taken, cache_size);
+}
+
 void init_cache_mutex() {
     pthread_mutex_init(&lock, NULL);
 }
@@ -20,9 +24,11 @@ void set_cache_size(const unsigned long size) {
 int store_file(const char* pathname, mc_file_info_t* file) {
     file_storage_entry_t* tmp = malloc(sizeof(file_storage_entry_t));
     tmp->next = NULL;
-    tmp->pathname = (char*)pathname;
+    tmp->pathname = strdup(pathname);
     tmp->file = file;
     tmp->timestamp = time(NULL);
+
+    cache_size_taken += tmp->file->size;
 
     if (storage == NULL) {
         storage = tmp;
@@ -38,7 +44,6 @@ int store_file(const char* pathname, mc_file_info_t* file) {
     }
     
     iterator->next = tmp;
-    cache_size_taken = cache_size_taken + tmp->file->size;
 #ifdef MC_DEBUG
     printf("[%s] file saved in cache!\n", tmp->pathname);
 #endif
@@ -64,11 +69,9 @@ int refresh_timestamp(const char* pathname) {
     while (iterator != NULL) {
         if (strcmp(iterator->pathname, pathname) == 0) {
             iterator->timestamp = time(NULL);
-
 #ifdef MC_DEBUG
             printf("[%s] Refreshed timestamp: %lu\n", iterator->pathname, iterator->timestamp);
 #endif
-
             return 1;
         }
 
@@ -124,11 +127,16 @@ mc_file_info_t* get_file(const char* pathname) {
 
     pthread_mutex_lock(&lock);
     while (!fits_in_storage(new_file)) {
-        remove_oldest_entry();
+        file_storage_entry_t* oldest = remove_oldest_entry();        
+        destroy_file(oldest->file);
+        free(oldest->pathname);
+        free(oldest);
     }
 
     store_file(pathname, new_file);
     pthread_mutex_unlock(&lock);
-
+#ifdef MC_DEBUG
+    print_cache_status();
+#endif
     return new_file;
 }

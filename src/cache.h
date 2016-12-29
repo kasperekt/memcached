@@ -26,5 +26,6 @@ int store_file(const char* pathname, mc_file_info_t* file);
 int fits_in_storage(const mc_file_info_t* file);
 file_storage_entry_t* remove_oldest_entry();
 int refresh_timestamp(const char* pathname);
+void print_cache_status();
 
 #endif

@@ -30,7 +30,7 @@ void* client_action(void* arg) {
     files_count = file_list(&files);
 
     char response[128];
-    int bytes_read = read(info.socket, response, 128);
+    read(info.socket, response, 128);
 
 #ifdef MC_DEBUG
     printf("[%d] client wants to download %s file\n", info.id, response);
