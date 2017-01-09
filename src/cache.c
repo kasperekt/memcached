@@ -81,26 +81,30 @@ int refresh_timestamp(const char* pathname) {
     return 0;
 }
 
-file_storage_entry_t* remove_oldest_entry() {
+void remove_oldest_entry() {
     if (storage == NULL) {
-        return NULL;
+        return;
     }
 
     file_storage_entry_t* oldest = storage;
     file_storage_entry_t* before = NULL;
     file_storage_entry_t* after = oldest->next;
+
     while ((after != NULL) && (oldest->timestamp < after->timestamp)) {
         before = oldest;
         oldest = after;
-        if (oldest->next != NULL) {
-            after = oldest->next;
-        }
+        after = oldest->next;
     }
 
-    before->next = after;
+    if (before != NULL) {
+        before->next = after;
+    }
+
     cache_size_taken -= oldest->file->size;
-    
-    return oldest;
+
+    destroy_file(oldest->file);
+    free(oldest->pathname);
+    free(oldest);
 }
 
 int fits_in_storage(const mc_file_info_t *file) {
@@ -129,10 +133,7 @@ mc_file_info_t* get_file(const char* pathname) {
 
     pthread_mutex_lock(&lock);
     while (!fits_in_storage(new_file)) {
-        file_storage_entry_t* oldest = remove_oldest_entry();        
-        destroy_file(oldest->file);
-        free(oldest->pathname);
-        free(oldest);
+        remove_oldest_entry();        
     }
 
     store_file(pathname, new_file);
