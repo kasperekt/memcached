@@ -31,15 +31,15 @@ make all
 
 Żeby uruchomić:
 ```
-./memcached [ip] [port] [udostępniany folder] [rozmiar cache w bajtach]
+./memcached [port] [udostępniany folder] [rozmiar cache w bajtach]
 ```
 
 Przykład (rozmiar cache 200MB):
 ```
-./memcached 127.0.0.1 1234 /var/memcached 20971520
+./memcached 1234 /var/memcached 20971520
 ```
 
-Żeby uruchomić serwer na `127.0.0.1:1234` który udostępnia pliki z katalogu `tmp/` o rozmiarze cache `100MB`:
+Żeby uruchomić serwer na `0.0.0.0:1234` który udostępnia pliki z katalogu `tmp/` o rozmiarze cache `100MB`:
 ```
 make run
 ```

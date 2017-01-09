@@ -17,7 +17,7 @@ all: clean prepare $(EXE)
 # 20MB = 20971520
 # 30MB = 31457280
 run: prepare $(EXE)
-	./$(EXE) 0.0.0.0 1234 $(FILES_STORAGE_DIR) 104857600
+	./$(EXE) 1234 $(FILES_STORAGE_DIR) 104857600
 
 $(EXE): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@

@@ -18,7 +18,6 @@ static const int QUEUE_SIZE = 5;
 
 typedef struct mc_arguments {
     unsigned long cache_size;
-    u_int32_t ip;
     int port;
     char* dir;
 } mc_args_t;
@@ -26,28 +25,22 @@ typedef struct mc_arguments {
 mc_args_t parse_arguments(int argc, char** argv) {
     mc_args_t args = {
         .cache_size = 1024 * 1024 * 30, // 30 MB
-        .ip = INADDR_ANY,
         .port = 1234,
         .dir = "/tmp"
     };
 
     if (argc > 1) {
-        char* ip_str = argv[1];
-        inet_pton(AF_INET, ip_str, &args.ip);
-    }   
-
-    if (argc > 2) {
-        char* port_str = argv[2];
+        char* port_str = argv[1];
         args.port = atoi(port_str);
     } 
 
-    if (argc > 3) {
-        char* storage_dir = argv[3];
+    if (argc > 2) {
+        char* storage_dir = argv[2];
         args.dir = storage_dir;
     }
 
-    if (argc > 4) {
-        char* cache_size_str = argv[4];
+    if (argc > 3) {
+        char* cache_size_str = argv[3];
         args.cache_size = atol(cache_size_str);
     }
 
@@ -60,7 +53,7 @@ int main(int argc, char** argv) {
     struct sockaddr_in stAddr;
     memset(&stAddr, 0, sizeof(struct sockaddr));
     stAddr.sin_family = AF_INET;
-    stAddr.sin_addr.s_addr = htonl(args.ip);
+    stAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     stAddr.sin_port = htons(args.port);
 
     int nSocket = socket(AF_INET, SOCK_STREAM, 0);
